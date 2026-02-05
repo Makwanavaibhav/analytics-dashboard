@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { Moon, Sun } from 'lucide-react';
 import { BarChart3, TrendingUp, Users, Globe, ShoppingBag,Calendar, Filter, Download, DollarSign, Search, RefreshCw, PieChart as PieChartIcon, BarChart as BarChartIcon, LineChart as LineChartIcon, TrendingDown,X } from 'lucide-react';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, PointElement, LineElement, RadialLinearScale, Filler } from 'chart.js';
 import { Bar, Pie, Line, Doughnut, Radar } from 'react-chartjs-2';
-
-// Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -19,14 +18,11 @@ ChartJS.register(
 );
 
 import salesData from '../src/data/salesdata.js';
-
-// Import your 4 components
 import HeaderSection from './Components/HeaderSection.jsx';
 import ControlsSection from './Components/ControlsSection.jsx';
 import ChartsGrid from './Components/ChartsGrid.jsx';
 import SalesTable from './Components/SalesTable.jsx';
 
-// Utility functions
 const getTotalRevenue = (data) => {
   return data.reduce((total, sale) => total + sale.revenue, 0);
 };
@@ -126,7 +122,6 @@ const getCustomerSpending = (data) => {
     .sort((a, b) => b.totalSpent - a.totalSpent);
 };
 
-// Chart colors
 const CHART_COLORS = {
   blue: '#3b82f6',
   green: '#10b981',
@@ -149,7 +144,6 @@ const CHART_COLORS_ARRAY = [
   '#14b8a6'
 ];
 
-// Main SalesDashboard Component
 const SalesDashboard = () => {
   const [filters, setFilters] = useState({
     region: 'all',
@@ -161,13 +155,13 @@ const SalesDashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [filteredData, setFilteredData] = useState(salesData);
   const [activeChart, setActiveChart] = useState('all');
+  const [isDarkMode, setIsDarkMode] = useState(false);
   
   const regions = ['all', ...new Set(salesData.map(item => item.region))];
   const categories = ['all', ...new Set(salesData.map(item => item.category))];
 
-  // Filter data based on filters and search term
   useEffect(() => {
-    let data = salesData;
+    let data = [...salesData];
 
     if (filters.region !== 'all') {
       data = data.filter(item => item.region === filters.region);
@@ -212,20 +206,27 @@ const SalesDashboard = () => {
     setFilteredData(data);
   }, [filters, searchTerm]);
 
-  // Calculate metrics from filtered data
+  useEffect(() => {
+    const saved = localStorage.getItem('darkMode');
+    if (saved === 'true') setIsDarkMode(true);
+  }, []);
+
+  const toggleDarkMode = () => {
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    localStorage.setItem('darkMode', newMode.toString());
+  };
+
   const totalRevenue = getTotalRevenue(filteredData);
   const averageOrderValue = totalRevenue / (filteredData.length || 1);
   const uniqueCustomers = new Set(filteredData.map(item => item.customer)).size;
   const totalOrders = filteredData.length;
-
-  // Prepare data for charts
   const revenueByRegion = getRevenueByRegion(filteredData);
   const revenueByCategory = getRevenueByCategory(filteredData);
   const monthlyRevenue = getMonthlyRevenue(filteredData);
   const topProducts = getTopSellingProducts(filteredData);
   const topCustomers = getCustomerSpending(filteredData).slice(0, 5);
 
-  // Prepare Chart.js data
   const regionChartData = {
     labels: Object.keys(revenueByRegion),
     datasets: [{
@@ -448,7 +449,11 @@ const SalesDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 p-4 md:p-6">
+    <div className={`min-h-screen bg-linear-to-br from-gray-50 to-gray-100 p-4 md:p-6 transition-all duration-300 ${
+      isDarkMode
+      ? 'bg-linear-to-br from-gray-900 via-gray-800 to-gray-900' 
+        : 'bg-linear-to-br from-gray-50 to-gray-100'
+    }`}>
       <HeaderSection 
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
@@ -456,6 +461,8 @@ const SalesDashboard = () => {
         onRefresh={refreshData}
         isLoading={isLoading}
         onExport={handleExport}
+        isDarkMode={isDarkMode}       
+        onToggleDarkMode={toggleDarkMode}
       />
       
       <ControlsSection 
@@ -471,6 +478,7 @@ const SalesDashboard = () => {
         uniqueCustomers={uniqueCustomers}
         totalOrders={totalOrders}
         isLoading={isLoading}
+        isDarkMode={isDarkMode}
       />
       
       <ChartsGrid 
@@ -490,6 +498,7 @@ const SalesDashboard = () => {
         pieChartOptions={pieChartOptions}
         lineChartOptions={lineChartOptions}
         radarChartOptions={radarChartOptions}
+        isDarkMode={isDarkMode}
       />
       
       <SalesTable 
@@ -497,6 +506,7 @@ const SalesDashboard = () => {
         salesData={salesData}
         filters={filters}
         searchTerm={searchTerm}
+        isDarkMode={isDarkMode}
       />
     </div>
   );

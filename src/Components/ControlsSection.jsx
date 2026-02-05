@@ -14,7 +14,8 @@ const ControlsSection = ({
   averageOrderValue, 
   uniqueCustomers, 
   totalOrders, 
-  isLoading 
+  isLoading,
+  isDarkMode 
 }) => {
   const chartTypes = [
     { id: 'all', label: 'All Charts', icon: BarChartIcon },
@@ -22,6 +23,14 @@ const ControlsSection = ({
     { id: 'line', label: 'Line Charts', icon: LineChartIcon },
     { id: 'pie', label: 'Pie Charts', icon: PieChartIcon },
   ];
+
+  const activeChartBtn = isDarkMode 
+    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg hover:from-blue-700 hover:to-purple-700'
+    : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg';  // ✅ FIXED GRADIENT
+
+  const inactiveChartBtn = isDarkMode
+    ? 'bg-gray-800 dark:bg-gray-800 text-gray-300 hover:bg-gray-700 border-gray-600 shadow-sm hover:shadow-md'
+    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md';
 
   return (
     <>
@@ -32,9 +41,7 @@ const ControlsSection = ({
             key={type.id}
             onClick={() => onChartChange(type.id)}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${
-              activeChart === type.id
-                ? 'bg-linear-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md'
+              activeChart === type.id ? activeChartBtn : inactiveChartBtn
             }`}
           >
             <type.icon size={18} />
@@ -43,27 +50,43 @@ const ControlsSection = ({
         ))}
       </div>
 
-      {/* Filters */}
-      <div className="bg-white rounded-xl p-5 shadow-lg border border-gray-200 mb-8">
+      {/* Filters Card */}
+      <div className={`rounded-xl p-5 shadow-lg border mb-8 ${
+        isDarkMode 
+          ? 'bg-gray-800 border-gray-700 shadow-gray-900/50' 
+          : 'bg-white border-gray-200 shadow-lg'
+      }`}>
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-2">
-            <Filter size={20} className="text-gray-500" />
-            <h3 className="font-semibold text-gray-800">Filters</h3>
+            <Filter size={20} className={isDarkMode ? "text-gray-400" : "text-gray-500"} />
+            <h3 className={isDarkMode ? "font-semibold text-gray-100" : "font-semibold text-gray-800"}>
+              Filters
+            </h3>
           </div>
           <button
             onClick={onClearFilters}
-            className="text-sm text-blue-600 hover:text-blue-800 font-medium hover:underline"
+            className={`text-sm font-medium hover:underline ${
+              isDarkMode ? "text-blue-400 hover:text-blue-300" : "text-blue-600 hover:text-blue-800"
+            }`}
           >
             Clear All Filters
           </button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Region</label>
+            <label className={`block text-sm font-medium mb-2 ${
+              isDarkMode ? "text-gray-300" : "text-gray-700"
+            }`}>
+              Region
+            </label>
             <select
               value={filters.region}
               onChange={(e) => onFiltersChange({...filters, region: e.target.value})}
-              className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+              className={`w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                isDarkMode 
+                  ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400' 
+                  : 'border-gray-300 bg-white'
+              }`}
             >
               {regions.map(region => (
                 <option key={region} value={region}>
@@ -72,12 +95,21 @@ const ControlsSection = ({
               ))}
             </select>
           </div>
+          
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+            <label className={`block text-sm font-medium mb-2 ${
+              isDarkMode ? "text-gray-300" : "text-gray-700"
+            }`}>
+              Category
+            </label>
             <select
               value={filters.category}
               onChange={(e) => onFiltersChange({...filters, category: e.target.value})}
-              className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+              className={`w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                isDarkMode 
+                  ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400' 
+                  : 'border-gray-300 bg-white'
+              }`}
             >
               {categories.map(category => (
                 <option key={category} value={category}>
@@ -86,12 +118,21 @@ const ControlsSection = ({
               ))}
             </select>
           </div>
+          
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+            <label className={`block text-sm font-medium mb-2 ${
+              isDarkMode ? "text-gray-300" : "text-gray-700"
+            }`}>
+              Date Range
+            </label>
             <select
               value={filters.dateRange}
               onChange={(e) => onFiltersChange({...filters, dateRange: e.target.value})}
-              className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+              className={`w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                isDarkMode 
+                  ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400' 
+                  : 'border-gray-300 bg-white'
+              }`}
             >
               <option value="all">All Time</option>
               <option value="last30">Last 30 Days</option>
@@ -112,7 +153,8 @@ const ControlsSection = ({
           color="green"
           loading={isLoading}
           chartType="line"
-        />
+          isDarkMode={isDarkMode} 
+          />
         <StatCard
           icon={ShoppingBag}
           title="Average Order Value"
@@ -121,6 +163,7 @@ const ControlsSection = ({
           color="blue"
           loading={isLoading}
           chartType="bar"
+          isDarkMode={isDarkMode}
         />
         <StatCard
           icon={Users}
@@ -130,6 +173,7 @@ const ControlsSection = ({
           color="purple"
           loading={isLoading}
           chartType="line"
+          isDarkMode={isDarkMode}
         />
         <StatCard
           icon={BarChart3}
@@ -139,6 +183,7 @@ const ControlsSection = ({
           color="orange"
           loading={isLoading}
           chartType="bar"
+          isDarkMode={isDarkMode}
         />
       </div>
     </>
