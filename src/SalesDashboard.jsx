@@ -53,23 +53,29 @@ const getMonthlyRevenue = (data) => {
   const monthlyData = {};
   data.forEach(sale => {
     const date = new Date(sale.date);
+    if (isNaN(date.getTime())) return;
     const month = date.toLocaleString('default', { month: 'short' });
     const year = date.getFullYear();
     const key = `${month} ${year}`;
-    
-    if (!monthlyData[key]) {
-      monthlyData[key] = 0;
-    }
-    monthlyData[key] += sale.revenue;
+    monthlyData[key] = (monthlyData[key] || 0) + sale.revenue;
   });
   
-  return Object.entries(monthlyData)
-    .sort((a, b) => {
-      const dateA = new Date(a[0]);
-      const dateB = new Date(b[0]);
-      return dateA - dateB;
-    })
-    .slice(-6);
+  // ✅ Ensure exactly 6 months from earliest/latest, fill gaps with 0 for full range
+  const entries = Object.entries(monthlyData);
+  if (entries.length === 0) return [];
+  
+  const sorted = entries.sort((a, b) => new Date(a[0]) - new Date(b[0]));
+  const startDate = new Date(sorted[0][0]);
+  const months = [];
+  
+  for (let i = 0; i < 6; i++) {
+    const monthDate = new Date(startDate);
+    monthDate.setMonth(startDate.getMonth() + i);
+    const key = monthDate.toLocaleString('default', { month: 'short' }) + ' ' + monthDate.getFullYear();
+    months.push([key, monthlyData[key] || 0]);
+  }
+  
+  return months;
 };
 
 const getTopSellingProducts = (data, limit = 5) => {
@@ -266,8 +272,12 @@ const SalesDashboard = () => {
       borderColor: CHART_COLORS.blue,
       backgroundColor: 'rgba(59, 130, 246, 0.1)',
       borderWidth: 3,
-      tension: 0.3,
+      tension: 0.4,
+      cubicInterpolationMode: 'monotone',
       fill: true,
+      spanGaps: true,
+      pointRadius: 6,
+      pointHoverRadius: 10,
     }],
   };
 
@@ -369,6 +379,17 @@ const SalesDashboard = () => {
   const lineChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    elements: {
+      line: {
+        tension: 0.4,
+        cubicInterpolationMode: 'monotone',
+        borderWidth: 3
+      },
+      point: {
+        radius: 6,
+        hoverRadius: 10
+      }
+    },
     plugins: {
       legend: { position: 'top' },
       tooltip: {
@@ -451,7 +472,7 @@ const SalesDashboard = () => {
   return (
     <div className={`min-h-screen bg-linear-to-br from-gray-50 to-gray-100 p-4 md:p-6 transition-all duration-300 ${
       isDarkMode
-      ? 'bg-linear-to-br from-gray-900 via-gray-800 to-gray-900' 
+        ? 'bg-linear-to-br from-gray-900 via-gray-800 to-gray-900' 
         : 'bg-linear-to-br from-gray-50 to-gray-100'
     }`}>
       <HeaderSection 
